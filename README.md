@@ -8,7 +8,7 @@ Java parser for python
  * Extend node semantic fields with custom ones
 
 # Project status
-In development, but claimed functionality already provided as is in `development` branch.
+In development, but claimed functionality already provided as is in `develop` branch.
 
 # Usage
 TBD
