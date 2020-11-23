@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  Quick checks:
+  Quick_checks:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
