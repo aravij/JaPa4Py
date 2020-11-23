@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [ master, develop ]
+
+jobs:
+  Quick checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8.6'
+      - name: Install dependencies
+        uses: py-actions/py-dependency-install@v2
+      - name: Check formatting
+        run: brunette --check .
+      - name: Check style
+        uses: suo/flake8-github-action@releases/v1
+      - name: Check types
+        uses: jpetrucciani/mypy-check@master
+      - name: Unit tests:
+        uses: onichandame/python-test-action@master
