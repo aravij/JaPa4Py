@@ -3,6 +3,7 @@ name: CI
 on:
   pull_request:
     branches: [ master, develop ]
+  workflow_dispatch:
 
 jobs:
   Quick checks:
