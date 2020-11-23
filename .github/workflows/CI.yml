@@ -22,5 +22,5 @@ jobs:
         uses: suo/flake8-github-action@releases/v1
       - name: Check types
         uses: jpetrucciani/mypy-check@master
-      - name: Unit tests:
+      - name: Unit tests
         uses: onichandame/python-test-action@master
