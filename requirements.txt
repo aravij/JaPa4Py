@@ -1,0 +1,9 @@
+# Dependencies
+networkx == 2.5
+javalang == 0.13.0
+cchardet == 2.1.7
+
+# Dev tools
+brunette == 0.1.7
+flake8 == 3.7.9
+mypy == 0.790
