@@ -5,7 +5,7 @@ from javalang.parse import parse
 from .encoding_detector import read_text_with_autodetected_encoding
 
 if TYPE_CHECKING:
-    from pathlib import Path
+    from pathlib import Path  # noqa: F401
     from javalang.tree import CompilationUnit
 
 
