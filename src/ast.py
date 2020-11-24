@@ -1,7 +1,4 @@
 from collections import defaultdict
-
-from javalang.tree import Node
-from networkx import DiGraph, dfs_labeled_edges, dfs_preorder_nodes  # type: ignore
 from typing import (
     Union,
     Any,
@@ -13,15 +10,23 @@ from typing import (
     Dict,
     cast,
     Optional,
+    TYPE_CHECKING
 )
+
+from networkx import DiGraph, dfs_labeled_edges, dfs_preorder_nodes  # type: ignore
+from javalang.tree import Node
 
 from .ast_node_type import ASTNodeType
 from .ast_node import ASTNode
+from .utils.ast_builder import build_ast
 from ._auxiliary_data import (
     javalang_to_ast_node_type,
     attributes_by_node_type,
     ASTNodeReference,
 )
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 TraverseCallback = Callable[[ASTNode], None]
 
@@ -32,7 +37,8 @@ class AST:
         self.root = root
 
     @staticmethod
-    def build_from_javalang(javalang_ast_root: Node) -> "AST":
+    def build_from_javalang(java_source_code_file_path: Union[str, "Path"]) -> "AST":
+        javalang_ast_root = build_ast(java_source_code_file_path)
         tree = DiGraph()
         javalang_node_to_index_map: Dict[Node, int] = {}
         root = AST._add_subtree_from_javalang_node(tree, javalang_ast_root, javalang_node_to_index_map)
