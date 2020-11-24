@@ -1,17 +1,5 @@
 from collections import defaultdict
-from typing import (
-    Union,
-    Any,
-    Callable,
-    Set,
-    List,
-    Iterator,
-    Tuple,
-    Dict,
-    cast,
-    Optional,
-    TYPE_CHECKING
-)
+from typing import Union, Any, Callable, Set, List, Iterator, Tuple, Dict, cast, Optional, TYPE_CHECKING
 
 from networkx import DiGraph, dfs_labeled_edges, dfs_preorder_nodes  # type: ignore
 from javalang.tree import Node
