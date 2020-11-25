@@ -108,9 +108,7 @@ class AstBuilder:
                 string_node_index = self._add_javalang_string_node(item)
                 self._graph.add_edge(node_index, string_node_index)
             elif item is not None:
-                raise ValueError(
-                    'Unexpected javalang AST node type {} inside "COLLECTION" node'.format(type(item))
-                )
+                raise ValueError('Unexpected javalang AST node type {} inside "COLLECTION" node'.format(type(item)))
         return node_index
 
     def _add_javalang_string_node(self, string_node: str) -> int:
