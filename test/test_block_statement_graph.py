@@ -316,7 +316,7 @@ class BlockStatementTestCase(TestCase):
     def _get_class_declaration(self) -> Tuple[str, str, ASTNode, AST]:
         current_directory = Path(__file__).absolute().parent
         filename = "BlockStatementGraphExamples.java"
-        ast = AST.build_from_javalang(current_directory / filename)
+        ast = AST.build(current_directory / filename)
 
         class_name = "BlockStatementGraphExamples"
         try:
