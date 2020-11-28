@@ -1,5 +1,6 @@
 from collections import defaultdict
-from typing import Union, Callable, List, Iterator, Dict, Optional, TYPE_CHECKING
+from enum import Enum, auto
+from typing import Union, Callable, List, Dict, Optional, Set, TYPE_CHECKING
 
 from networkx import DiGraph, dfs_labeled_edges, dfs_preorder_nodes  # type: ignore
 
@@ -13,6 +14,12 @@ if TYPE_CHECKING:
 TraverseCallback = Callable[[ASTNode], None]
 
 
+class NodesSearchFilter(Enum):
+    TOP_LEVEL = auto()
+    BOTTOM_LEVEL = auto()
+    ALL = auto()
+
+
 class AST:
     def __init__(self, networkx_tree: DiGraph, root: int):
         self.tree = networkx_tree
@@ -23,6 +30,20 @@ class AST:
         builder = AstBuilder()
         graph, root_id = builder.build(source_code_file_path)
         return AST(graph, root_id)
+
+    def find_nodes(self, *node_types: ASTNodeType, search_filter=NodesSearchFilter.ALL) -> List[ASTNode]:
+        if search_filter == NodesSearchFilter.ALL:
+            return self._find_nodes(*node_types)
+        elif search_filter == NodesSearchFilter.TOP_LEVEL:
+            return self._find_top_level_nodes(*node_types)
+        elif search_filter == NodesSearchFilter.BOTTOM_LEVEL:
+            return self._find_bottom_level_nodes(*node_types)
+        else:
+            raise NotImplementedError(f"Unknown search filter {search_filter}.")
+
+    @property
+    def nodes(self) -> List[ASTNode]:
+        return [ASTNode(self.tree, node_id) for node_id in self.tree.nodes]
 
     def __str__(self) -> str:
         printed_graph = ""
@@ -46,33 +67,6 @@ class AST:
 
     def get_root(self) -> ASTNode:
         return ASTNode(self.tree, self.root)
-
-    def __iter__(self) -> Iterator[ASTNode]:
-        for node_index in self.tree.nodes:
-            yield ASTNode(self.tree, node_index)
-
-    def get_subtrees(self, *root_type: ASTNodeType) -> Iterator["AST"]:
-        """
-        Yields subtrees with given type of the root.
-        If such subtrees are one including the other, only the larger one is
-        going to be in resulted sequence.
-        """
-        is_inside_subtree = False
-        current_subtree_root = -1  # all node indexes are positive
-        subtree: List[int] = []
-        for _, destination, edge_type in dfs_labeled_edges(self.tree, self.root):
-            if edge_type == "forward":
-                if is_inside_subtree:
-                    subtree.append(destination)
-                elif self.tree.nodes[destination]["node_type"] in root_type:
-                    subtree.append(destination)
-                    is_inside_subtree = True
-                    current_subtree_root = destination
-            elif edge_type == "reverse" and destination == current_subtree_root:
-                is_inside_subtree = False
-                yield AST(self.tree.subgraph(subtree), current_subtree_root)
-                subtree = []
-                current_subtree_root = -1
 
     def get_subtree(self, node: ASTNode) -> "AST":
         subtree_nodes_indexes = dfs_preorder_nodes(self.tree, node.node_index)
@@ -102,9 +96,59 @@ class AST:
         new_fake_node_id = -(fake_nodes_qty + 1)
         return ASTNode(self.tree, new_fake_node_id)
 
-    def get_proxy_nodes(self, *types: ASTNodeType) -> Iterator[ASTNode]:
-        for node in self.tree.nodes:
-            if len(types) == 0 or self.tree.nodes[node]["node_type"] in types:
-                yield ASTNode(self.tree, node)
+    def _find_nodes(self, *node_types: ASTNodeType) -> List[ASTNode]:
+        return [
+            ASTNode(self.tree, node_id)
+            for node_id in self.tree.nodes
+            if not node_types or self._get_node_type(node_id) in node_types
+        ]
+
+    def _find_top_level_nodes(self, *node_types: ASTNodeType) -> List[ASTNode]:
+        # if all node types are valid than there is only one single top level node
+        # and it is root
+        if not node_types:
+            return [self.get_root()]
+
+        nodes: List[ASTNode] = []
+        current_node: Optional[ASTNode] = None
+
+        def on_node_entering(node: ASTNode) -> None:
+            nonlocal current_node, nodes
+            if not current_node and node.node_type in node_types:
+                nodes.append(node)
+                current_node = node
+
+        def on_node_leaving(node: ASTNode) -> None:
+            nonlocal current_node, nodes
+            if current_node and node == current_node:
+                current_node = None
+
+        self.traverse(on_node_entering, on_node_leaving)
+        return nodes
+
+    def _find_bottom_level_nodes(self, *node_types: ASTNodeType) -> List[ASTNode]:
+        nodes: List[ASTNode] = []
+        nodes_stack: List[ASTNode] = []
+        not_bottom_nodes: Set[ASTNode] = set()
+
+        def on_node_entering(node: ASTNode) -> None:
+            nonlocal nodes_stack
+            if not node_types or node.node_type in node_types:
+                nodes_stack.append(node)
+
+        def on_node_leaving(node: ASTNode) -> None:
+            nonlocal nodes_stack, not_bottom_nodes, nodes
+            if not node_types or node.node_type in node_types:
+                if node not in not_bottom_nodes:
+                    nodes.append(node)
+
+                nodes_stack.pop()
+                not_bottom_nodes.update(nodes_stack)
+
+        self.traverse(on_node_entering, on_node_leaving)
+        return nodes
+
+    def _get_node_type(self, node_id: int) -> ASTNodeType:
+        return self.tree.nodes[node_id]["node_type"]
 
     _fake_nodes_qty_per_graph: Dict[DiGraph, int] = defaultdict(lambda: 0)
