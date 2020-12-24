@@ -1,6 +1,6 @@
 from .ast_node_type import ASTNodeType  # noqa: F401
 from .ast_node import ASTNode  # noqa: F401
-from .ast import AST  # noqa: F401
+from .ast import AST, NodesSearchFilter  # noqa: F401
 
 # register all standard computed fields from 'computed_fields_catalog'
 from .computed_fields_catalog.standard_fields import (

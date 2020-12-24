@@ -1,27 +1,29 @@
 from unittest import TestCase
 from pathlib import Path
-from itertools import zip_longest
+from typing import Dict, Set
 
-from src import AST, ASTNodeType
+from src import AST, ASTNodeType, NodesSearchFilter
 
 
 class ASTTestSuite(TestCase):
     def test_parsing(self):
-        ast = self._build_ast("SimpleClass.java")
-        actual_node_types = [node.node_type for node in ast]
-        self.assertEqual(actual_node_types, ASTTestSuite._java_simple_class_preordered)
+        ast = AST.build(self._current_dir / "SimpleClass.java")
+        actual_node_types = [node.node_type for node in ast.nodes]
+        self.assertEqual(actual_node_types, ASTTestSuite._simple_class_preordered)
 
-    def test_subtrees_selection(self):
-        ast = self._build_ast("SimpleClass.java")
-        subtrees = ast.get_subtrees(ASTNodeType.BASIC_TYPE)
-        for actual_subtree, expected_subtree in zip_longest(
-            subtrees, ASTTestSuite._java_simple_class_basic_type_subtrees
-        ):
-            with self.subTest():
-                self.assertEqual([node.node_index for node in actual_subtree], expected_subtree)
+    def test_finding_nodes(self):
+        ast = AST.build(self._current_dir / "AnonymousClass.java")
+        for filter_type in NodesSearchFilter:
+            found_methods = ast.find_nodes(ASTNodeType.METHOD_DECLARATION, search_filter=filter_type)
+            method_names = {method.name for method in found_methods}
+            self.assertEqual(
+                method_names,
+                self._anonymous_class_method_names[filter_type],
+                f"Failed finding nodes with filter {filter_type}.",
+            )
 
     def test_complex_fields(self):
-        ast = self._build_ast("StaticConstructor.java")
+        ast = AST.build(self._current_dir / "StaticConstructor.java")
         class_declaration = next(
             (
                 declaration
@@ -39,10 +41,9 @@ class ASTTestSuite(TestCase):
         )
         self.assertEqual(method_declaration.node_type, ASTNodeType.METHOD_DECLARATION)
 
-    def _build_ast(self, filename: str):
-        return AST.build(Path(__file__).parent.absolute() / filename)
+    _current_dir = Path(__file__).parent.absolute()
 
-    _java_simple_class_preordered = [
+    _simple_class_preordered = [
         ASTNodeType.COMPILATION_UNIT,
         ASTNodeType.CLASS_DECLARATION,
         ASTNodeType.COLLECTION,
@@ -76,7 +77,8 @@ class ASTTestSuite(TestCase):
         ASTNodeType.STRING,
     ]
 
-    _java_simple_class_basic_type_subtrees = [
-        [8, 9],
-        [17, 18],
-    ]
+    _anonymous_class_method_names: Dict[NodesSearchFilter, Set[str]] = {
+        NodesSearchFilter.ALL: {"method", "overriddenMethod1", "overriddenMethod2"},
+        NodesSearchFilter.TOP_LEVEL: {"method"},
+        NodesSearchFilter.BOTTOM_LEVEL: {"overriddenMethod1", "overriddenMethod2"},
+    }
