@@ -40,7 +40,7 @@ class ASTTestSuite(TestCase):
         self.assertEqual(method_declaration.node_type, ASTNodeType.METHOD_DECLARATION)
 
     def _build_ast(self, filename: str):
-        return AST.build_from_javalang(Path(__file__).parent.absolute() / filename)
+        return AST.build(Path(__file__).parent.absolute() / filename)
 
     _java_simple_class_preordered = [
         ASTNodeType.COMPILATION_UNIT,

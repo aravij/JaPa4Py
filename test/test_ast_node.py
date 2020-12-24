@@ -6,7 +6,7 @@ from src import AST, ASTNodeType
 
 class ASTNodeTestSuite(TestCase):
     def test_class_computed_fields(self):
-        ast = AST.build_from_javalang(Path(__file__).absolute().parent / "MethodUseOtherMethodExample.java")
+        ast = AST.build(Path(__file__).absolute().parent / "MethodUseOtherMethodExample.java")
         package = ast.get_root()
         assert len(package.types) == 1 and package.types[0].node_type == ASTNodeType.CLASS_DECLARATION
 
@@ -35,7 +35,7 @@ class ASTNodeTestSuite(TestCase):
         self.assertEqual(set(java_class.constructors), set())
 
     def test_fake_node(self):
-        ast = AST.build_from_javalang(Path(__file__).absolute().parent / "MethodUseOtherMethodExample.java")
+        ast = AST.build(Path(__file__).absolute().parent / "MethodUseOtherMethodExample.java")
 
         fake_node = ast.create_fake_node()
 
@@ -50,7 +50,7 @@ class ASTNodeTestSuite(TestCase):
         self.assertEqual(fake_node.node_type, None)
 
         # interface through standart python function
-        self.assertEqual(str(fake_node), "node index: -1\n" "node_type: None")
+        self.assertEqual(str(fake_node), "node index: -1\nnode_type: None")
         self.assertEqual(repr(fake_node), "<ASTNode node_type: None, node_index: -1>")
         self.assertEqual(dir(fake_node), ["children", "is_fake", "line", "node_index", "parent"])
 
@@ -60,9 +60,9 @@ class ASTNodeTestSuite(TestCase):
             self.fail(f"Failed to hash fake node with following exception {e}.")
 
     def test_fake_nodes_equality(self):
-        ast1 = AST.build_from_javalang(Path(__file__).absolute().parent / "MethodUseOtherMethodExample.java")
+        ast1 = AST.build(Path(__file__).absolute().parent / "MethodUseOtherMethodExample.java")
 
-        ast2 = AST.build_from_javalang(Path(__file__).absolute().parent / "LottieImageAsset.java")
+        ast2 = AST.build(Path(__file__).absolute().parent / "LottieImageAsset.java")
 
         ast1_fake_node1 = ast1.create_fake_node()
         ast1_fake_node2 = ast1.create_fake_node()
