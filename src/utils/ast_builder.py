@@ -1,12 +1,13 @@
-from typing import TYPE_CHECKING
+from typing import Union, TYPE_CHECKING
 
 from javalang.parse import parse
 
 from .encoding_detector import read_text_with_autodetected_encoding
 
 if TYPE_CHECKING:
+    from pathlib import Path  # noqa: F401
     from javalang.tree import CompilationUnit
 
 
-def build_ast(filename: str) -> "CompilationUnit":
-    return parse(read_text_with_autodetected_encoding(filename))
+def build_ast(filename: Union[str, "Path"]) -> "CompilationUnit":
+    return parse(read_text_with_autodetected_encoding(str(filename)))

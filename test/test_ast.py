@@ -2,7 +2,6 @@ from unittest import TestCase
 from pathlib import Path
 from itertools import zip_longest
 
-from src.utils.ast_builder import build_ast
 from src import AST, ASTNodeType
 
 
@@ -41,8 +40,7 @@ class ASTTestSuite(TestCase):
         self.assertEqual(method_declaration.node_type, ASTNodeType.METHOD_DECLARATION)
 
     def _build_ast(self, filename: str):
-        javalang_ast = build_ast(str(Path(__file__).parent.absolute() / filename))
-        return AST.build_from_javalang(javalang_ast)
+        return AST.build_from_javalang(Path(__file__).parent.absolute() / filename)
 
     _java_simple_class_preordered = [
         ASTNodeType.COMPILATION_UNIT,

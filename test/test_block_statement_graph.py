@@ -6,7 +6,6 @@ from unittest import TestCase
 from src.block_statement_graph import build_block_statement_graph, Block, Statement
 from src.block_statement_graph.constants import BlockReason
 from src import AST, ASTNode, ASTNodeType
-from src.utils.ast_builder import build_ast
 
 
 class BlockStatementTestCase(TestCase):
@@ -317,7 +316,7 @@ class BlockStatementTestCase(TestCase):
     def _get_class_declaration(self) -> Tuple[str, str, ASTNode, AST]:
         current_directory = Path(__file__).absolute().parent
         filename = "BlockStatementGraphExamples.java"
-        ast = AST.build_from_javalang(build_ast(str(current_directory / filename)))
+        ast = AST.build_from_javalang(current_directory / filename)
 
         class_name = "BlockStatementGraphExamples"
         try:
